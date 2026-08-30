@@ -1,0 +1,5 @@
+Pollutant,Start Date,End Date,Location,Latitude Min,Latitude Max,Longitude Min,Longitude Max,Status
+NO2,2025-08-30,2026-08-30,"Telukdalam, Pulau Nias",0.5569268,0.5790399,97.8085542,97.8311628,Pending/Error
+CO,2025-08-30,2026-08-30,"Telukdalam, Pulau Nias",0.5569268,0.5790399,97.8085542,97.8311628,Pending/Error
+SO2,2025-08-30,2026-08-30,"Telukdalam, Pulau Nias",0.5569268,0.5790399,97.8085542,97.8311628,Pending/Error
+NH3,2025-08-30,2026-08-30,"Telukdalam, Pulau Nias",0.5569268,0.5790399,97.8085542,97.8311628,Pending/Error
