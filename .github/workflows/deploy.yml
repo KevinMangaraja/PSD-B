@@ -3,7 +3,7 @@ name: Deploy MyST Book to GitHub Pages
 on:
   push:
     branches:
-      - main # Ubah ke 'master' jika branch Anda bernama master
+      - main # Ubah ke 'master' jika branch utama Anda bernama master
 
 permissions:
   contents: read
@@ -21,9 +21,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Menggunakan action resmi mystmd yang benar
+      # Action resmi MyST Markdown yang benar
       - name: Build MyST Site
-        uses: mystmd/action@v1
+        uses: executablebooks/mystmd-action@v1
         with:
           action: build
           html: true
