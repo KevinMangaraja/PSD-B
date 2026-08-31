@@ -3,7 +3,7 @@ name: Deploy MyST Book to GitHub Pages
 on:
   push:
     branches:
-      - main # Ubah ke 'master' jika branch utama Anda bernama master
+      - main # Ganti 'master' jika branch Anda bernama master
 
 permissions:
   contents: read
@@ -12,21 +12,30 @@ permissions:
 
 concurrency:
   group: 'pages'
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Action resmi MyST Markdown yang benar
-      - name: Build MyST Site
-        uses: executablebooks/mystmd-action@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          action: build
-          html: true
+          node-version: 20
+
+      - name: Install MyST CLI
+        run: npm install -g mystmd
+
+      - name: Build MyST Site
+        run: myst build --html
+        env:
+          BASE_URL: /${{ github.event.repository.name }}
 
       - name: Upload Artifact
         uses: actions/upload-pages-artifact@v3
