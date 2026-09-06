@@ -21,7 +21,7 @@ project:
     - file: src/1-project/PSD-1.ipynb
       children:
         - file: src/1-project/index.md
-
+    - file: src/1-project/statistik.ipynb
   # github:
   # To autogenerate a Table of Contents, run "jupyter book init --write-toc"
 site:
