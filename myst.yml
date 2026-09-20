@@ -20,7 +20,7 @@ project:
     - file: src/1-project/PSD-1.ipynb
     - file: src/1-project/PSD-2.ipynb
     - file: src/1-project/PSD-3.ipynb
-    - file: src/1-project/PSD-4.ipynb
+    # - file: src/1-project/PSD-4.ipynb
   # github:
   # To autogenerate a Table of Contents, run "jupyter book init --write-toc"
 site:
