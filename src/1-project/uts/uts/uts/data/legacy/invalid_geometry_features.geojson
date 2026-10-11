@@ -1,0 +1,61 @@
+﻿{
+    "type":  "FeatureCollection",
+    "features":  [
+                     {
+                         "type":  "Feature",
+                         "properties":  {
+                                            "Type":  "Sawah",
+                                            "ID_Poligon":  "Sawah_48"
+                                        },
+                         "geometry":  {
+                                          "type":  "Polygon",
+                                          "coordinates":  [
+                                                              [
+                                                                  [
+                                                                      112.926591,
+                                                                      -7.668111
+                                                                  ],
+                                                                  [
+                                                                      112.926591,
+                                                                      -7.668111
+                                                                  ]
+                                                              ]
+                                                          ]
+                                      }
+                     },
+                     {
+                         "type":  "Feature",
+                         "properties":  {
+                                            "Type":  "Hutan non mangrove",
+                                            "ID_Poligon":  "Hutan_non_mangrove_01"
+                                        },
+                         "geometry":  {
+                                          "type":  "Polygon",
+                                          "coordinates":  [
+                                                              [
+                                                                  [
+                                                                      112.466396,
+                                                                      -6.91454
+                                                                  ],
+                                                                  [
+                                                                      112.466396,
+                                                                      -6.91454
+                                                                  ],
+                                                                  [
+                                                                      112.466407,
+                                                                      -6.91454
+                                                                  ],
+                                                                  [
+                                                                      112.466407,
+                                                                      -6.91454
+                                                                  ],
+                                                                  [
+                                                                      112.466396,
+                                                                      -6.91454
+                                                                  ]
+                                                              ]
+                                                          ]
+                                      }
+                     }
+                 ]
+}
