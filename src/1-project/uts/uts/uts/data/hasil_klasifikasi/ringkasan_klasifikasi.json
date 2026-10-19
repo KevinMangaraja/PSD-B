@@ -1,0 +1,108 @@
+{
+  "model": "data\\model_rf_lulc.joblib",
+  "method": "Random Forest",
+  "boundary_file": "data\\geojson\\batas_administratif_jawa_timur.geojson",
+  "boundary_source": "geoBoundaries gbOpen Indonesia ADM1, sourced from OpenStreetMap/Wambacher (boundary year 2017; ODbL 1.0)",
+  "boundary_source_url": "https://www.geoboundaries.org/api/current/gbOpen/IDN/ADM1/",
+  "boundary_license": "Open Data Commons Open Database License (ODbL) 1.0",
+  "classes": [
+    "Sawah",
+    "Pemukiman",
+    "Hutan non mangrove",
+    "Hutan mangrove",
+    "Air"
+  ],
+  "features": [
+    "B02",
+    "B03",
+    "B04",
+    "B08",
+    "B11",
+    "NDVI",
+    "NDWI",
+    "NDBI"
+  ],
+  "scene_files": {
+    "T49MEM": {
+      "B02": "T49MEM_20260929T023531_B02_10m.jp2",
+      "B03": "T49MEM_20260929T023531_B03_10m.jp2",
+      "B04": "T49MEM_20260929T023531_B04_10m.jp2",
+      "B08": "T49MEM_20260929T023531_B08_10m.jp2",
+      "B11": "T49MEM_20260929T023531_B11_20m.jp2"
+    },
+    "T49MEN": {
+      "B02": "T49MEN_20260929T023531_B02_10m.jp2",
+      "B03": "T49MEN_20260929T023531_B03_10m.jp2",
+      "B04": "T49MEN_20260929T023531_B04_10m.jp2",
+      "B08": "T49MEN_20260929T023531_B08_10m.jp2",
+      "B11": "T49MEN_20260929T023531_B11_20m.jp2"
+    },
+    "T49MFM": {
+      "B02": "T49MFM_20261001T024141_B02_10m.jp2",
+      "B03": "T49MFM_20261001T024141_B03_10m.jp2",
+      "B04": "T49MFM_20261001T024141_B04_10m.jp2",
+      "B08": "T49MFM_20261001T024141_B08_10m.jp2",
+      "B11": "T49MFM_20261001T024141_B11_20m.jp2"
+    },
+    "T49MFN": {
+      "B02": "T49MFN_20261001T024141_B02_10m.jp2",
+      "B03": "T49MFN_20261001T024141_B03_10m.jp2",
+      "B04": "T49MFN_20261001T024141_B04_10m.jp2",
+      "B08": "T49MFN_20261001T024141_B08_10m.jp2",
+      "B11": "T49MFN_20261001T024141_B11_20m.jp2"
+    },
+    "T49MGM": {
+      "B02": "T49MGM_20261001T022529_B02_10m.jp2",
+      "B03": "T49MGM_20261001T022529_B03_10m.jp2",
+      "B04": "T49MGM_20261001T022529_B04_10m.jp2",
+      "B08": "T49MGM_20261001T022529_B08_10m.jp2",
+      "B11": "T49MGM_20261001T022529_B11_20m.jp2"
+    },
+    "T49MGN": {
+      "B02": "T49MGN_20260926T022531_B02_10m.jp2",
+      "B03": "T49MGN_20260926T022531_B03_10m.jp2",
+      "B04": "T49MGN_20260926T022531_B04_10m.jp2",
+      "B08": "T49MGN_20260926T022531_B08_10m.jp2",
+      "B11": "T49MGN_20260926T022531_B11_20m.jp2"
+    },
+    "T49MHM": {
+      "B02": "T49MHM_20260926T022531_B02_10m.jp2",
+      "B03": "T49MHM_20260926T022531_B03_10m.jp2",
+      "B04": "T49MHM_20260926T022531_B04_10m.jp2",
+      "B08": "T49MHM_20260926T022531_B08_10m.jp2",
+      "B11": "T49MHM_20260926T022531_B11_20m.jp2"
+    }
+  },
+  "prediction_rasters": [
+    "data\\hasil_klasifikasi\\klasifikasi_T49MEM_10m.tif",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MEN_10m.tif",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MFM_10m.tif",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MFN_10m.tif",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MGM_10m.tif",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MGN_10m.tif",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MHM_10m.tif"
+  ],
+  "folium_tile_overlays": [
+    "data\\hasil_klasifikasi\\klasifikasi_T49MEM_10m_folium.png",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MEN_10m_folium.png",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MFM_10m_folium.png",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MFN_10m_folium.png",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MGM_10m_folium.png",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MGN_10m_folium.png",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MHM_10m_folium.png"
+  ],
+  "map_serving_note": "Serve the output folder over HTTP so the Folium map can load the adjacent full-resolution PNG overlays.",
+  "prediction_valid_pixels": 415484994,
+  "raster_coverage_percent_of_boundary": 81.50533281701053,
+  "predicted_pixel_count_by_class": {
+    "Sawah": 22781578,
+    "Pemukiman": 120124594,
+    "Hutan non mangrove": 150852972,
+    "Hutan mangrove": 9736242,
+    "Air": 111989608
+  },
+  "test_accuracy": 0.7922388059701493,
+  "test_macro_f1": 0.7842738368435048,
+  "cloud_masking": "Not applied; SCL band is unavailable",
+  "uncovered_area": "No prediction; no valid Sentinel-2 raster coverage"
+}

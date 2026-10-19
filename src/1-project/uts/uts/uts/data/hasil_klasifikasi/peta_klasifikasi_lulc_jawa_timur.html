@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_96660b542571a20d7743a82dc21d0a40 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+    
+            
+                <style>
+                    .leaflet-image-layer {
+                        /* old android/safari*/
+                        image-rendering: -webkit-optimize-contrast;
+                        image-rendering: crisp-edges; /* safari */
+                        image-rendering: pixelated; /* chrome */
+                        image-rendering: -moz-crisp-edges; /* firefox */
+                        image-rendering: -o-crisp-edges; /* opera */
+                        -ms-interpolation-mode: nearest-neighbor; /* ie */
+                    }
+                </style>
+            
+        
+</head>
+<body>
+    
+    
+        <div style="position:fixed;bottom:25px;left:25px;z-index:9999;
+          background:rgba(255,255,255,.94);padding:12px 14px;
+          border:1px solid #777;border-radius:5px;
+          font:13px/1.45 Arial,sans-serif;box-shadow:0 1px 5px #777">
+          <div><span style="display:inline-block;width:13px;height:13px;background:#f1c40f;margin-right:7px;border:1px solid #555"></span>Sawah</div><div><span style="display:inline-block;width:13px;height:13px;background:#e74c3c;margin-right:7px;border:1px solid #555"></span>Pemukiman</div><div><span style="display:inline-block;width:13px;height:13px;background:#228b22;margin-right:7px;border:1px solid #555"></span>Hutan non mangrove</div><div><span style="display:inline-block;width:13px;height:13px;background:#006d5b;margin-right:7px;border:1px solid #555"></span>Hutan mangrove</div><div><span style="display:inline-block;width:13px;height:13px;background:#168aad;margin-right:7px;border:1px solid #555"></span>Air</div>
+        </div>
+        
+    
+            <div class="folium-map" id="map_96660b542571a20d7743a82dc21d0a40" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_96660b542571a20d7743a82dc21d0a40 = L.map(
+                "map_96660b542571a20d7743a82dc21d0a40",
+                {
+                    center: [-7.720717929685274, 112.72522543686024],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 7,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_e0d91d6bc03b7365cc1c981b1eb8e952 = L.tileLayer(
+                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "Tiles \u00a9 Esri \u2014 Source: Esri, Maxar, Earthstar Geographics",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_e0d91d6bc03b7365cc1c981b1eb8e952.addTo(map_96660b542571a20d7743a82dc21d0a40);
+        
+    
+            var image_overlay_75012b2392b3ee36bbf7e153d24f79fa = L.imageOverlay(
+                "./klasifikasi_T49MEM_10m_folium.png",
+                [[-8.230498859590194, 110.99981840700138], [-7.236199172322049, 111.9967123395775]],
+                {
+  "opacity": 1.0,
+  "interactive": true,
+  "crossOrigin": false,
+  "zindex": 1,
+}
+            );
+        
+    
+            image_overlay_75012b2392b3ee36bbf7e153d24f79fa.addTo(map_96660b542571a20d7743a82dc21d0a40);
+        
+    
+            var image_overlay_924556112e34f65daf6fe6126b719f78 = L.imageOverlay(
+                "./klasifikasi_T49MEN_10m_folium.png",
+                [[-7.325753155086697, 110.99981879570184], [-6.331550719435669, 111.99457930223055]],
+                {
+  "opacity": 1.0,
+  "interactive": true,
+  "crossOrigin": false,
+  "zindex": 1,
+}
+            );
+        
+    
+            image_overlay_924556112e34f65daf6fe6126b719f78.addTo(map_96660b542571a20d7743a82dc21d0a40);
+        
+    
+            var image_overlay_3347efd7b9d69a142f909188c7079998 = L.imageOverlay(
+                "./klasifikasi_T49MFM_10m_folium.png",
+                [[-8.229472946685181, 111.90580535424327], [-7.233321356902524, 112.90455026346146]],
+                {
+  "opacity": 1.0,
+  "interactive": true,
+  "crossOrigin": false,
+  "zindex": 1,
+}
+            );
+        
+    
+            image_overlay_3347efd7b9d69a142f909188c7079998.addTo(map_96660b542571a20d7743a82dc21d0a40);
+        
+    
+            var image_overlay_456ea88ac1a0729fa1506c96571f7e5c = L.imageOverlay(
+                "./klasifikasi_T49MFN_10m_folium.png",
+                [[-7.324841280100629, 111.9041165853439], [-6.329035710518441, 112.90047655938334]],
+                {
+  "opacity": 1.0,
+  "interactive": true,
+  "crossOrigin": false,
+  "zindex": 1,
+}
+            );
+        
+    
+            image_overlay_456ea88ac1a0729fa1506c96571f7e5c.addTo(map_96660b542571a20d7743a82dc21d0a40);
+        
+    
+            var image_overlay_1d55835263735543b1a4033fe31ee6a6 = L.imageOverlay(
+                "./klasifikasi_T49MGM_10m_folium.png",
+                [[-8.22639812634988, 112.81101713992004], [-7.228649590030752, 113.81135314503076]],
+                {
+  "opacity": 1.0,
+  "interactive": true,
+  "crossOrigin": false,
+  "zindex": 1,
+}
+            );
+        
+    
+            image_overlay_1d55835263735543b1a4033fe31ee6a6.addTo(map_96660b542571a20d7743a82dc21d0a40);
+        
+    
+            var image_overlay_bf858e49b25e09bc98bafea1502d08b9 = L.imageOverlay(
+                "./klasifikasi_T49MGN_10m_folium.png",
+                [[-7.322108246266586, 112.80764239013027], [-6.324952906050957, 113.80534505641359]],
+                {
+  "opacity": 1.0,
+  "interactive": true,
+  "crossOrigin": false,
+  "zindex": 1,
+}
+            );
+        
+    
+            image_overlay_bf858e49b25e09bc98bafea1502d08b9.addTo(map_96660b542571a20d7743a82dc21d0a40);
+        
+    
+            var image_overlay_c0d699ef8a2806c8bd09cb1c5181851a = L.imageOverlay(
+                "./klasifikasi_T49MHM_10m_folium.png",
+                [[-8.221274538477354, 113.71630973884275], [-7.222184060422444, 114.71797647966741]],
+                {
+  "opacity": 1.0,
+  "interactive": true,
+  "crossOrigin": false,
+  "zindex": 1,
+}
+            );
+        
+    
+            image_overlay_c0d699ef8a2806c8bd09cb1c5181851a.addTo(map_96660b542571a20d7743a82dc21d0a40);
+        
+    
+            var layer_control_d8d8f151edd8184234de4aee2fa42f58_layers = {
+                base_layers : {
+                },
+                overlays :  {
+                    "RF T49MEM" : image_overlay_75012b2392b3ee36bbf7e153d24f79fa,
+                    "RF T49MEN" : image_overlay_924556112e34f65daf6fe6126b719f78,
+                    "RF T49MFM" : image_overlay_3347efd7b9d69a142f909188c7079998,
+                    "RF T49MFN" : image_overlay_456ea88ac1a0729fa1506c96571f7e5c,
+                    "RF T49MGM" : image_overlay_1d55835263735543b1a4033fe31ee6a6,
+                    "RF T49MGN" : image_overlay_bf858e49b25e09bc98bafea1502d08b9,
+                    "RF T49MHM" : image_overlay_c0d699ef8a2806c8bd09cb1c5181851a,
+                },
+            };
+            let layer_control_d8d8f151edd8184234de4aee2fa42f58 = L.control.layers(
+                layer_control_d8d8f151edd8184234de4aee2fa42f58_layers.base_layers,
+                layer_control_d8d8f151edd8184234de4aee2fa42f58_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": false,
+  "autoZIndex": true,
+}
+            ).addTo(map_96660b542571a20d7743a82dc21d0a40);
+
+        
+    
+            map_96660b542571a20d7743a82dc21d0a40.fitBounds(
+                [[-8.7808254, 110.8972111], [-5.0432281, 116.2703024]],
+                {}
+            );
+        
+</script>
+</html>

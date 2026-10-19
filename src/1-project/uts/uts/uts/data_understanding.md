@@ -21,7 +21,7 @@ Data acuan (_ground truth_) dibaca dari `data/geojson/jawa_timur.geojson`. Dua f
 
 Jumlah sampel tidak seimbang. Geometri yang tersisa dapat dibaca sebagai poligon; tumpang-tindih spasial dan kesesuaian label tetap perlu diperiksa.
 
-GeoJSON hanya menyediakan geometri dan label kelas, bukan nilai spektral Sentinel-2. Nilai band kini diekstrak dari raster JP2 di folder `TILE_1` sampai `TILE_5`; band B11 20 m di-resample bilinear ke grid 10 m. Piksel bernilai nol dibuang, dan poligon tanpa piksel citra valid tidak masuk ke split akhir. Maksimal 50 piksel dipilih secara deterministik per poligon. Cloud masking tidak dilakukan karena band SCL tidak disertakan. CSV piksel lama dari dataset 250 poligon telah dihapus; model lama tetap diarsipkan dan tidak digunakan.
+GeoJSON hanya menyediakan geometri dan label kelas, bukan nilai spektral Sentinel-2. Nilai band diekstrak dari raster JP2 di folder `TILE_1` sampai `TILE_5` dan `TILE-6` sampai `TILE-9`; band B11 20 m di-resample bilinear ke grid 10 m. Jika kode tile Sentinel-2 yang sama tersedia di beberapa folder/tanggal, scene terbaru dipakai. `TILE-6` berisi footprint T49MFM yang juga sudah ada di `TILE_1`/`TILE_5`, sehingga scene yang lebih baru dari `TILE_1` dipilih; `TILE-7` sampai `TILE-9` menambah tiga kode tile baru. Piksel bernilai nol dibuang, dan poligon tanpa piksel citra valid tidak masuk ke split akhir. Maksimal 50 piksel dipilih secara deterministik per poligon. Cloud masking tidak dilakukan karena band SCL tidak disertakan. CSV piksel lama dari dataset 250 poligon telah dihapus; model lama tetap diarsipkan dan tidak digunakan.
 
 ---
 

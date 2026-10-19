@@ -1,0 +1,11 @@
+folium
+geopandas
+joblib
+matplotlib
+numpy
+pandas
+Pillow
+rasterio
+scikit-learn==1.9.0
+shapely
+streamlit

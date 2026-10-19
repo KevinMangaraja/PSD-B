@@ -1,4 +1,5 @@
 ID_Poligon,Type,Status_Split
+Sawah_01,Sawah,Training
 Sawah_02,Sawah,Training
 Sawah_05,Sawah,Training
 Sawah_06,Sawah,Training
@@ -50,7 +51,6 @@ Air_18,Air,Training
 Air_20,Air,Training
 Air_21,Air,Training
 Air_22,Air,Training
-Air_24,Air,Training
 Air_25,Air,Training
 Air_26,Air,Training
 Air_29,Air,Training
@@ -66,6 +66,7 @@ Air_40,Air,Training
 Air_41,Air,Training
 Air_42,Air,Training
 Air_43,Air,Training
+Air_44,Air,Training
 Air_45,Air,Training
 Air_46,Air,Training
 Air_48,Air,Training
@@ -82,6 +83,7 @@ Pemukiman_07,Pemukiman,Training
 Pemukiman_08,Pemukiman,Training
 Pemukiman_09,Pemukiman,Training
 Pemukiman_11,Pemukiman,Training
+Pemukiman_12,Pemukiman,Training
 Pemukiman_14,Pemukiman,Training
 Pemukiman_17,Pemukiman,Training
 Pemukiman_18,Pemukiman,Training

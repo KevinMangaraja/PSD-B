@@ -21,6 +21,13 @@ FILENAME_PATTERN = re.compile(
     r"(?P<tile>T\d{2}[A-Z]{3})_(?P<date>\d{8}T\d{6})_"
     r"(?P<band>B\d{2})_\d+m\.jp2$"
 )
+TILE_DIRECTORY_PATTERN = re.compile(r"TILE[-_]\d+\Z")
+
+
+def iter_sentinel_tile_rasters(raster_root):
+    for tile_dir in sorted(Path(raster_root).iterdir()):
+        if tile_dir.is_dir() and TILE_DIRECTORY_PATTERN.fullmatch(tile_dir.name):
+            yield from sorted(tile_dir.glob("*.jp2"))
 
 
 def stratified_polygon_split(gdf, test_percent=30):
@@ -76,7 +83,7 @@ def create_pixel_datasets(gdf, train_polygons, test_polygons, raster_root, outpu
         raise FileNotFoundError(f"Folder raster tidak ditemukan: {raster_root.resolve()}")
 
     scenes = {}
-    for path in raster_root.glob("TILE_*/*.jp2"):
+    for path in iter_sentinel_tile_rasters(raster_root):
         match = FILENAME_PATTERN.fullmatch(path.name)
         if not match or match.group("band") not in BANDS:
             continue
