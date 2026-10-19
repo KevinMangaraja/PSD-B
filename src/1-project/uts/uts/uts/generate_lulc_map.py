@@ -613,10 +613,8 @@ def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
                     for tile, path in zip(selected_scenes, preview_paths)
                 },
                 "overlay_bounds": {
-                    overlay_tiles[image_path.stem]: overlay_bounds[
-                        overlay_tiles[image_path.stem]
-                    ]
-                    for image_path in overlay_paths
+                    tile: overlay_bounds[f"klasifikasi_{tile}_10m"]
+                    for tile in selected_scenes
                 },
                 "map_bounds": [
                     [
