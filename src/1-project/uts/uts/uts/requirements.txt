@@ -8,5 +8,5 @@ Pillow
 rasterio
 scikit-learn==1.9.0
 shapely
-streamlit
+streamlit>=1.32.0
 streamlit-folium
