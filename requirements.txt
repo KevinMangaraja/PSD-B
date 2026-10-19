@@ -1,0 +1,4 @@
+folium
+Pillow
+streamlit
+streamlit-folium

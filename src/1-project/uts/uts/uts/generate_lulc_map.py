@@ -277,28 +277,96 @@ def _clip_existing_prediction(
 
 
 def _write_folium_overlay(
-    raster_path: Path, image_path: Path
+    raster_path: Path, image_path: Path, preview_path: Path
 ) -> tuple[list[list[float]], int]:
     with rasterio.open(raster_path) as source:
         class_ids = source.read(1)
+        scale = min(1, 2048 / source.width, 2048 / source.height)
+        preview_ids = source.read(
+            1,
+            out_shape=(
+                max(1, round(source.height * scale)),
+                max(1, round(source.width * scale)),
+            ),
+            resampling=Resampling.nearest,
+        )
         bounds = transform_bounds(
             source.crs, "EPSG:4326", *source.bounds, densify_pts=21
         )
-    image = Image.fromarray(class_ids, mode="P")
     palette = [0] * 768
     for class_id, label in enumerate(CLASS_ORDER, start=1):
         color = CLASS_COLORS[label].lstrip("#")
         palette[class_id * 3 : class_id * 3 + 3] = [
             int(color[offset : offset + 2], 16) for offset in (0, 2, 4)
         ]
+    image = Image.fromarray(class_ids, mode="P")
     image.putpalette(palette)
     image.info["transparency"] = bytes([0, *([255] * 255)])
     image.save(image_path, format="PNG", compress_level=1)
+    preview = Image.fromarray(preview_ids, mode="P")
+    preview.putpalette(palette)
+    preview.info["transparency"] = bytes([0, *([255] * 255)])
+    preview.save(preview_path, format="PNG", optimize=True)
     class_count = int(np.count_nonzero(class_ids))
     image.close()
+    preview.close()
     del class_ids
     west, south, east, north = bounds
     return [[south, west], [north, east]], class_count
+
+
+def refresh_streamlit_previews(project_dir: Path) -> None:
+    project_dir = Path(project_dir).resolve()
+    output_dir = project_dir / "data" / "hasil_klasifikasi"
+    metadata_path = output_dir / "ringkasan_klasifikasi.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    preview_paths = {}
+    preview_bounds = {}
+    palette = [0] * 768
+    for class_id, label in enumerate(CLASS_ORDER, start=1):
+        color = CLASS_COLORS[label].lstrip("#")
+        palette[class_id * 3 : class_id * 3 + 3] = [
+            int(color[offset : offset + 2], 16) for offset in (0, 2, 4)
+        ]
+
+    for relative_path in metadata["prediction_rasters"]:
+        raster_path = project_dir / relative_path
+        tile = raster_path.stem.removeprefix("klasifikasi_").removesuffix("_10m")
+        preview_path = output_dir / f"{raster_path.stem}_streamlit.png"
+        with rasterio.open(raster_path) as source:
+            scale = min(1, 2048 / source.width, 2048 / source.height)
+            preview_ids = source.read(
+                1,
+                out_shape=(
+                    max(1, round(source.height * scale)),
+                    max(1, round(source.width * scale)),
+                ),
+                resampling=Resampling.nearest,
+            )
+            bounds = transform_bounds(
+                source.crs, "EPSG:4326", *source.bounds, densify_pts=21
+            )
+        preview = Image.fromarray(preview_ids, mode="P")
+        preview.putpalette(palette)
+        preview.info["transparency"] = bytes([0, *([255] * 255)])
+        preview.save(preview_path, format="PNG", optimize=True)
+        preview.close()
+        west, south, east, north = bounds
+        preview_paths[tile] = str(preview_path.relative_to(project_dir))
+        preview_bounds[tile] = [[south, west], [north, east]]
+
+    boundary = gpd.read_file(
+        project_dir / "data" / "geojson" / "batas_administratif_jawa_timur.geojson"
+    ).to_crs("EPSG:4326")
+    west, south, east, north = boundary.total_bounds
+    metadata["streamlit_previews"] = list(preview_paths.values())
+    metadata["streamlit_previews_by_tile"] = preview_paths
+    metadata["overlay_bounds"] = preview_bounds
+    metadata["map_bounds"] = [[float(south), float(west)], [float(north), float(east)]]
+    metadata_path.write_text(
+        json.dumps(metadata, indent=2, ensure_ascii=False),
+        encoding="utf-8",
+    )
 
 
 def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
@@ -402,6 +470,7 @@ def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
         raise ValueError("Tidak ada piksel Sentinel-2 valid di dalam batas Jawa Timur.")
 
     overlay_paths = []
+    preview_paths = []
     overlay_bounds = {}
     overlay_tiles = {}
     predicted_counts = {label: 0 for label in CLASS_ORDER}
@@ -412,8 +481,10 @@ def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
                 if value:
                     predicted_counts[CLASS_ORDER[int(value) - 1]] += int(count)
         overlay_path = output_dir / f"{path.stem}_folium.png"
-        image_bounds, _ = _write_folium_overlay(path, overlay_path)
+        preview_path = output_dir / f"{path.stem}_streamlit.png"
+        image_bounds, _ = _write_folium_overlay(path, overlay_path, preview_path)
         overlay_paths.append(overlay_path)
+        preview_paths.append(preview_path)
         overlay_bounds[path.stem] = image_bounds
         overlay_tiles[overlay_path.stem] = path.stem
 
@@ -533,6 +604,29 @@ def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
                 ],
                 "folium_tile_overlays": [
                     str(path.relative_to(project_dir)) for path in overlay_paths
+                ],
+                "streamlit_previews": [
+                    str(path.relative_to(project_dir)) for path in preview_paths
+                ],
+                "streamlit_previews_by_tile": {
+                    tile: str(path.relative_to(project_dir))
+                    for tile, path in zip(selected_scenes, preview_paths)
+                },
+                "overlay_bounds": {
+                    overlay_tiles[image_path.stem]: overlay_bounds[
+                        overlay_tiles[image_path.stem]
+                    ]
+                    for image_path in overlay_paths
+                },
+                "map_bounds": [
+                    [
+                        float(boundary_wgs84.total_bounds[1]),
+                        float(boundary_wgs84.total_bounds[0]),
+                    ],
+                    [
+                        float(boundary_wgs84.total_bounds[3]),
+                        float(boundary_wgs84.total_bounds[2]),
+                    ],
                 ],
                 "map_serving_note": (
                     "Serve the output folder over HTTP so the Folium map can load "

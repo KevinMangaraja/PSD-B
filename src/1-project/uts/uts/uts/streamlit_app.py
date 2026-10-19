@@ -1,95 +1,53 @@
-import base64
-import io
 import json
 from pathlib import Path
 
 import folium
-import geopandas as gpd
-import numpy as np
-import rasterio
 import streamlit as st
+from streamlit_folium import st_folium
 from folium import Element
-from PIL import Image
-from rasterio.enums import Resampling
-from rasterio.warp import transform_bounds
-
-from generate_lulc_map import (
-    CLASS_COLORS,
-    CLASS_ORDER,
-    _latest_complete_scenes,
-    generate_lulc_map,
-)
 
 
 PROJECT_DIR = Path(__file__).resolve().parent
-DATA_DIR = PROJECT_DIR / "data"
-RASTER_DIR = DATA_DIR / "geojson"
-OUTPUT_DIR = DATA_DIR / "hasil_klasifikasi"
+OUTPUT_DIR = PROJECT_DIR / "data" / "hasil_klasifikasi"
 METADATA_PATH = OUTPUT_DIR / "ringkasan_klasifikasi.json"
-BOUNDARY_PATH = RASTER_DIR / "batas_administratif_jawa_timur.geojson"
-PREVIEW_SIZE = (2048, 2048)
+CLASS_ORDER = (
+    "Sawah",
+    "Pemukiman",
+    "Hutan non mangrove",
+    "Hutan mangrove",
+    "Air",
+)
+CLASS_COLORS = {
+    "Sawah": "#f1c40f",
+    "Pemukiman": "#e74c3c",
+    "Hutan non mangrove": "#228b22",
+    "Hutan mangrove": "#006d5b",
+    "Air": "#168aad",
+}
+
+
+@st.cache_data(show_spinner=False)
+def _load_metadata(metadata_path: str, modified_ns: int, size: int) -> dict:
+    del modified_ns, size
+    return json.loads(Path(metadata_path).read_text(encoding="utf-8"))
 
 
 @st.cache_data(show_spinner=False, max_entries=16)
 def _preview_image_url(path_string: str, modified_ns: int, size: int) -> str:
     del modified_ns, size
-    buffer = io.BytesIO()
-    with rasterio.open(path_string) as source:
-        scale = min(
-            1,
-            PREVIEW_SIZE[0] / source.width,
-            PREVIEW_SIZE[1] / source.height,
-        )
-        width = max(1, round(source.width * scale))
-        height = max(1, round(source.height * scale))
-        class_ids = source.read(
-            1,
-            out_shape=(height, width),
-            resampling=Resampling.nearest,
-        )
-    palette = np.zeros((256, 4), dtype=np.uint8)
-    for class_id, label in enumerate(CLASS_ORDER, start=1):
-        color = CLASS_COLORS[label].lstrip("#")
-        palette[class_id] = [
-            int(color[offset : offset + 2], 16) for offset in (0, 2, 4)
-        ] + [255]
-    image = Image.fromarray(palette[class_ids])
-    image.save(buffer, format="PNG", optimize=True)
-    encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
+    import base64
+
+    encoded = base64.b64encode(Path(path_string).read_bytes()).decode("ascii")
     return f"data:image/png;base64,{encoded}"
 
 
-def _expected_scenes() -> dict[str, dict[str, str]]:
-    return {
-        tile: {band: path.name for band, path in files.items()}
-        for tile, files in _latest_complete_scenes(RASTER_DIR).items()
-    }
-
-
-def _ensure_current_classification() -> dict:
-    expected_scenes = _expected_scenes()
-    metadata = (
-        json.loads(METADATA_PATH.read_text(encoding="utf-8"))
-        if METADATA_PATH.is_file()
-        else {}
-    )
-    outputs_exist = all(
-        (PROJECT_DIR / relative_path).is_file()
-        for relative_path in metadata.get("prediction_rasters", [])
-    )
-    if metadata.get("scene_files") != expected_scenes or not outputs_exist:
-        with st.spinner("Mengklasifikasikan seluruh tile Sentinel-2..."):
-            generate_lulc_map(PROJECT_DIR)
-        metadata = json.loads(METADATA_PATH.read_text(encoding="utf-8"))
-    return metadata
-
-
 def _build_map(metadata: dict, opacity: float) -> folium.Map:
-    boundary = gpd.read_file(BOUNDARY_PATH).to_crs("EPSG:4326")
-    bounds = boundary.total_bounds
-    center = boundary.geometry.iloc[0].representative_point()
+    south_west, north_east = metadata["map_bounds"]
     map_view = folium.Map(
-        location=[float(center.y), float(center.x)],
+        location=[
+            (south_west[0] + north_east[0]) / 2,
+            (south_west[1] + north_east[1]) / 2,
+        ],
         zoom_start=7,
         tiles=None,
         control_scale=False,
@@ -106,22 +64,17 @@ def _build_map(metadata: dict, opacity: float) -> folium.Map:
         max_zoom=19,
     ).add_to(map_view)
 
-    for tile in metadata["scene_files"]:
-        raster_path = OUTPUT_DIR / f"klasifikasi_{tile}_10m.tif"
-        if not raster_path.is_file():
-            raise FileNotFoundError(f"Output klasifikasi tidak ditemukan: {raster_path}")
-        stat = raster_path.stat()
+    for tile, relative_path in metadata["streamlit_previews_by_tile"].items():
+        image_path = PROJECT_DIR / relative_path
+        if not image_path.is_file():
+            raise FileNotFoundError(f"Preview klasifikasi tidak ditemukan: {image_path}")
+        stat = image_path.stat()
         image_url = _preview_image_url(
-            str(raster_path), stat.st_mtime_ns, stat.st_size
+            str(image_path), stat.st_mtime_ns, stat.st_size
         )
-        with rasterio.open(raster_path) as source:
-            image_bounds = transform_bounds(
-                source.crs, "EPSG:4326", *source.bounds, densify_pts=21
-            )
-        west, south, east, north = image_bounds
         folium.raster_layers.ImageOverlay(
             image=image_url,
-            bounds=[[south, west], [north, east]],
+            bounds=metadata["overlay_bounds"][tile],
             name=f"RF {tile}",
             opacity=opacity,
             interactive=False,
@@ -148,49 +101,45 @@ def _build_map(metadata: dict, opacity: float) -> folium.Map:
         )
     )
     folium.LayerControl(collapsed=True).add_to(map_view)
-    map_view.fit_bounds(
-        [[float(bounds[1]), float(bounds[0])], [float(bounds[3]), float(bounds[2])]]
-    )
+    map_view.fit_bounds([south_west, north_east])
     return map_view
-
-
-def _map_document(map_view: folium.Map) -> str:
-    rendered = map_view.get_root().render()
-    start = rendered.find("<body")
-    if start == -1:
-        raise RuntimeError("HTML Folium tidak memiliki elemen body.")
-    start = rendered.find(">", start) + 1
-    end = rendered.rfind("</body>")
-    if start == 0 or end == -1:
-        raise RuntimeError("Struktur body HTML Folium tidak lengkap.")
-    body = rendered[start:end]
-    body += """
-    <script>
-      window.addEventListener("load", function () {
-        window.setTimeout(function () {
-          const map = window["MAP_NAME"];
-          if (map) {
-            map.invalidateSize(true);
-          }
-        }, 100);
-      });
-    </script>
-    """.replace("MAP_NAME", map_view.get_name())
-    return (
-        '<!DOCTYPE html><html><head><meta charset="utf-8">'
-        '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
-        '<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>'
-        '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css">'
-        '<style>html,body{width:100%;height:100%;margin:0;padding:0;overflow:hidden}</style>'
-        '</head><body>'
-        + body
-        + "</body></html>"
-    )
 
 
 def main() -> None:
     st.set_page_config(page_title="Peta LULC Jawa Timur", layout="wide")
-    metadata = _ensure_current_classification()
+    if not METADATA_PATH.is_file():
+        st.error(
+            "Data peta belum tersedia. Jalankan generate_lulc_map.py secara lokal, "
+            "lalu commit metadata dan preview PNG ke repository."
+        )
+        st.stop()
+    metadata_stat = METADATA_PATH.stat()
+    metadata = _load_metadata(
+        str(METADATA_PATH), metadata_stat.st_mtime_ns, metadata_stat.st_size
+    )
+    required_metadata = {
+        "streamlit_previews_by_tile",
+        "overlay_bounds",
+        "map_bounds",
+    }
+    if not required_metadata.issubset(metadata):
+        st.error(
+            "Metadata peta belum memiliki bounds dan preview deployment. "
+            "Jalankan ulang generate_lulc_map.py, lalu commit hasilnya."
+        )
+        st.stop()
+    missing_previews = [
+        str(PROJECT_DIR / relative_path)
+        for relative_path in metadata["streamlit_previews_by_tile"].values()
+        if not (PROJECT_DIR / relative_path).is_file()
+    ]
+    if missing_previews:
+        st.error(
+            "File preview klasifikasi belum ada di repository. Jalankan "
+            "generate_lulc_map.py lalu commit file streamlit PNG berikut:\n\n"
+            + "\n".join(missing_previews)
+        )
+        st.stop()
     full_map = st.query_params.get("view") == "folium"
 
     if not full_map:
@@ -205,7 +154,7 @@ def main() -> None:
         format="%d%%",
     )
     map_view = _build_map(metadata, opacity_percent / 100)
-    st.iframe(_map_document(map_view), height=780)
+    st_folium(map_view, height=780, use_container_width=True, returned_objects=[])
 
 
 if __name__ == "__main__":

@@ -104,5 +104,105 @@
   "test_accuracy": 0.7922388059701493,
   "test_macro_f1": 0.7842738368435048,
   "cloud_masking": "Not applied; SCL band is unavailable",
-  "uncovered_area": "No prediction; no valid Sentinel-2 raster coverage"
+  "uncovered_area": "No prediction; no valid Sentinel-2 raster coverage",
+  "streamlit_previews": [
+    "data\\hasil_klasifikasi\\klasifikasi_T49MEM_10m_streamlit.png",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MEN_10m_streamlit.png",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MFM_10m_streamlit.png",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MFN_10m_streamlit.png",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MGM_10m_streamlit.png",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MGN_10m_streamlit.png",
+    "data\\hasil_klasifikasi\\klasifikasi_T49MHM_10m_streamlit.png"
+  ],
+  "streamlit_previews_by_tile": {
+    "T49MEM": "data\\hasil_klasifikasi\\klasifikasi_T49MEM_10m_streamlit.png",
+    "T49MEN": "data\\hasil_klasifikasi\\klasifikasi_T49MEN_10m_streamlit.png",
+    "T49MFM": "data\\hasil_klasifikasi\\klasifikasi_T49MFM_10m_streamlit.png",
+    "T49MFN": "data\\hasil_klasifikasi\\klasifikasi_T49MFN_10m_streamlit.png",
+    "T49MGM": "data\\hasil_klasifikasi\\klasifikasi_T49MGM_10m_streamlit.png",
+    "T49MGN": "data\\hasil_klasifikasi\\klasifikasi_T49MGN_10m_streamlit.png",
+    "T49MHM": "data\\hasil_klasifikasi\\klasifikasi_T49MHM_10m_streamlit.png"
+  },
+  "overlay_bounds": {
+    "T49MEM": [
+      [
+        -8.230498859590194,
+        110.99981840700138
+      ],
+      [
+        -7.236199172322049,
+        111.9967123395775
+      ]
+    ],
+    "T49MEN": [
+      [
+        -7.325753155086697,
+        110.99981879570184
+      ],
+      [
+        -6.331550719435669,
+        111.99457930223055
+      ]
+    ],
+    "T49MFM": [
+      [
+        -8.229472946685181,
+        111.90580535424327
+      ],
+      [
+        -7.233321356902524,
+        112.90455026346146
+      ]
+    ],
+    "T49MFN": [
+      [
+        -7.324841280100629,
+        111.9041165853439
+      ],
+      [
+        -6.329035710518441,
+        112.90047655938334
+      ]
+    ],
+    "T49MGM": [
+      [
+        -8.22639812634988,
+        112.81101713992004
+      ],
+      [
+        -7.228649590030752,
+        113.81135314503076
+      ]
+    ],
+    "T49MGN": [
+      [
+        -7.322108246266586,
+        112.80764239013027
+      ],
+      [
+        -6.324952906050957,
+        113.80534505641359
+      ]
+    ],
+    "T49MHM": [
+      [
+        -8.221274538477354,
+        113.71630973884275
+      ],
+      [
+        -7.222184060422444,
+        114.71797647966741
+      ]
+    ]
+  },
+  "map_bounds": [
+    [
+      -8.7808254,
+      110.8972111
+    ],
+    [
+      -5.0432281,
+      116.2703024
+    ]
+  ]
 }
