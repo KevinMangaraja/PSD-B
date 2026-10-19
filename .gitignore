@@ -20,3 +20,8 @@ Thumbs.db
 
 # Environment Variables
 .env
+# Abaikan file citra satelit mentah
+*.jp2
+*.tif
+*.tiff
+src/1-project/uts/uts/uts/data/geojson/
