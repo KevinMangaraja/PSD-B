@@ -91,20 +91,6 @@
     "data\\hasil_klasifikasi\\klasifikasi_T49MGN_10m_folium.png",
     "data\\hasil_klasifikasi\\klasifikasi_T49MHM_10m_folium.png"
   ],
-  "map_serving_note": "Serve the output folder over HTTP so the Folium map can load the adjacent full-resolution PNG overlays.",
-  "prediction_valid_pixels": 415484994,
-  "raster_coverage_percent_of_boundary": 81.50533281701053,
-  "predicted_pixel_count_by_class": {
-    "Sawah": 22781578,
-    "Pemukiman": 120124594,
-    "Hutan non mangrove": 150852972,
-    "Hutan mangrove": 9736242,
-    "Air": 111989608
-  },
-  "test_accuracy": 0.7922388059701493,
-  "test_macro_f1": 0.7842738368435048,
-  "cloud_masking": "Not applied; SCL band is unavailable",
-  "uncovered_area": "No prediction; no valid Sentinel-2 raster coverage",
   "streamlit_previews": [
     "data\\hasil_klasifikasi\\klasifikasi_T49MEM_10m_streamlit.png",
     "data\\hasil_klasifikasi\\klasifikasi_T49MEN_10m_streamlit.png",
@@ -124,7 +110,7 @@
     "T49MHM": "data\\hasil_klasifikasi\\klasifikasi_T49MHM_10m_streamlit.png"
   },
   "overlay_bounds": {
-    "T49MEM": [
+    "klasifikasi_T49MEM_10m": [
       [
         -8.230498859590194,
         110.99981840700138
@@ -134,7 +120,7 @@
         111.9967123395775
       ]
     ],
-    "T49MEN": [
+    "klasifikasi_T49MEN_10m": [
       [
         -7.325753155086697,
         110.99981879570184
@@ -144,7 +130,7 @@
         111.99457930223055
       ]
     ],
-    "T49MFM": [
+    "klasifikasi_T49MFM_10m": [
       [
         -8.229472946685181,
         111.90580535424327
@@ -154,7 +140,7 @@
         112.90455026346146
       ]
     ],
-    "T49MFN": [
+    "klasifikasi_T49MFN_10m": [
       [
         -7.324841280100629,
         111.9041165853439
@@ -164,7 +150,7 @@
         112.90047655938334
       ]
     ],
-    "T49MGM": [
+    "klasifikasi_T49MGM_10m": [
       [
         -8.22639812634988,
         112.81101713992004
@@ -174,7 +160,7 @@
         113.81135314503076
       ]
     ],
-    "T49MGN": [
+    "klasifikasi_T49MGN_10m": [
       [
         -7.322108246266586,
         112.80764239013027
@@ -184,7 +170,7 @@
         113.80534505641359
       ]
     ],
-    "T49MHM": [
+    "klasifikasi_T49MHM_10m": [
       [
         -8.221274538477354,
         113.71630973884275
@@ -204,5 +190,19 @@
       -5.0432281,
       116.2703024
     ]
-  ]
+  ],
+  "map_serving_note": "Serve the output folder over HTTP so the Folium map can load the adjacent full-resolution PNG overlays.",
+  "prediction_valid_pixels": 415484994,
+  "raster_coverage_percent_of_boundary": 81.50533281701053,
+  "predicted_pixel_count_by_class": {
+    "Sawah": 22781578,
+    "Pemukiman": 120124594,
+    "Hutan non mangrove": 150852972,
+    "Hutan mangrove": 9736242,
+    "Air": 111989608
+  },
+  "test_accuracy": 0.7922388059701493,
+  "test_macro_f1": 0.7842738368435048,
+  "cloud_masking": "Not applied; SCL band is unavailable",
+  "uncovered_area": "No prediction; no valid Sentinel-2 raster coverage"
 }
