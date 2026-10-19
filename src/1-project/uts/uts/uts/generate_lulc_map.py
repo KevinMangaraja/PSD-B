@@ -352,7 +352,7 @@ def refresh_streamlit_previews(project_dir: Path) -> None:
         preview.save(preview_path, format="PNG", optimize=True)
         preview.close()
         west, south, east, north = bounds
-        preview_paths[tile] = str(preview_path.relative_to(project_dir))
+        preview_paths[tile] = preview_path.relative_to(project_dir).as_posix()
         preview_bounds[tile] = [[south, west], [north, east]]
 
     boundary = gpd.read_file(
@@ -589,7 +589,7 @@ def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
             {
                 "model": str(model_path.relative_to(project_dir)),
                 "method": "Random Forest",
-                "boundary_file": str(boundary_path.relative_to(project_dir)),
+                "boundary_file": boundary_path.relative_to(project_dir).as_posix(),
                 "boundary_source": BOUNDARY_SOURCE,
                 "boundary_source_url": BOUNDARY_SOURCE_URL,
                 "boundary_license": "Open Data Commons Open Database License (ODbL) 1.0",
@@ -600,16 +600,16 @@ def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
                     for tile, files in selected_scenes.items()
                 },
                 "prediction_rasters": [
-                    str(path.relative_to(project_dir)) for path in raster_paths
+                    path.relative_to(project_dir).as_posix() for path in raster_paths
                 ],
                 "folium_tile_overlays": [
-                    str(path.relative_to(project_dir)) for path in overlay_paths
+                    path.relative_to(project_dir).as_posix() for path in overlay_paths
                 ],
                 "streamlit_previews": [
-                    str(path.relative_to(project_dir)) for path in preview_paths
+                    path.relative_to(project_dir).as_posix() for path in preview_paths
                 ],
                 "streamlit_previews_by_tile": {
-                    tile: str(path.relative_to(project_dir))
+                    tile: path.relative_to(project_dir).as_posix()
                     for tile, path in zip(selected_scenes, preview_paths)
                 },
                 "overlay_bounds": {

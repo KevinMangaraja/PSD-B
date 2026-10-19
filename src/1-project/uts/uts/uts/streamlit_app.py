@@ -26,6 +26,13 @@ CLASS_COLORS = {
 }
 
 
+def _project_path(relative_path: str) -> Path:
+    parts = relative_path.replace("\\", "/").split("/")
+    if not relative_path or any(part in ("", ".", "..") for part in parts):
+        raise ValueError(f"Path asset tidak valid: {relative_path!r}")
+    return PROJECT_DIR.joinpath(*parts)
+
+
 @st.cache_data(show_spinner=False)
 def _load_metadata(metadata_path: str, modified_ns: int, size: int) -> dict:
     del modified_ns, size
@@ -65,7 +72,7 @@ def _build_map(metadata: dict, opacity: float) -> folium.Map:
     ).add_to(map_view)
 
     for tile, relative_path in metadata["streamlit_previews_by_tile"].items():
-        image_path = PROJECT_DIR / relative_path
+        image_path = _project_path(relative_path)
         if not image_path.is_file():
             raise FileNotFoundError(f"Preview klasifikasi tidak ditemukan: {image_path}")
         stat = image_path.stat()
@@ -128,11 +135,11 @@ def main() -> None:
             "Jalankan ulang generate_lulc_map.py, lalu commit hasilnya."
         )
         st.stop()
-    missing_previews = [
-        str(PROJECT_DIR / relative_path)
+    preview_paths = [
+        _project_path(relative_path)
         for relative_path in metadata["streamlit_previews_by_tile"].values()
-        if not (PROJECT_DIR / relative_path).is_file()
     ]
+    missing_previews = [str(path) for path in preview_paths if not path.is_file()]
     if missing_previews:
         st.error(
             "File preview klasifikasi belum ada di repository. Jalankan "
