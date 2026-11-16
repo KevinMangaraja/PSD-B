@@ -1,0 +1,181 @@
+# ==============================================================================
+# Environment Variables, Secrets, & Credentials
+# ==============================================================================
+.env
+.env.*
+*.env
+**/.env
+!.env.example
+.credentials/
+secrets/
+*.pem
+*.key
+*.cert
+*.pfx
+*.p12
+credentials.json
+client_secret*.json
+
+# ==============================================================================
+# Virtual Environments
+# ==============================================================================
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+bin/
+include/
+lib/
+lib64/
+share/
+pyvenv.cfg
+pip-selfcheck.json
+
+# ==============================================================================
+# Python Cache, Bytecode & Packaging
+# ==============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+*.pyo
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ==============================================================================
+# Jupyter Notebooks & MyST Build Output
+# ==============================================================================
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+_build/
+.myst/
+.jupyter/
+
+# ==============================================================================
+# Node.js / NPM / Web tooling
+# ==============================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# ==============================================================================
+# IDEs & Text Editors
+# ==============================================================================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# ==============================================================================
+# OS Generated Files
+# ==============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ==============================================================================
+# Testing, Profiling & Coverage
+# ==============================================================================
+.pytest_cache/
+.coverage
+.coverage.*
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+htmlcov/
+.tox/
+
+# ==============================================================================
+# Logs & Databases
+# ==============================================================================
+*.log
+logs/
+*.sqlite
+*.sqlite3
+*.db
+
+# ==============================================================================
+# Large Datasets, Audio Corpora, Spatial Files & Archives
+# ==============================================================================
+*.tif
+*.tiff
+*.geotiff
+*.img
+*.nc
+*.hdf
+*.hdf5
+*.h5
+*.npy
+*.npz
+!src/project_akhir/6-deploy/models/attention_crnn_fp16_runtime.npz
+*.pkl
+*.pickle
+!src/Tugas_UTS/**/*.pkl
+!src/Tugas_UTS/**/*.pickle
+*.parquet
+*.feather
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+
+# Raw Audio Dataset Files (RAVDESS 1,440 WAVs & Mirrors - Do Not Push)
+*.wav
+*.mp3
+*.flac
+*.ogg
+*.m4a
+src/project_akhir/2-data_understanding/dataset/
+**/dataset/
+**/Actor_*/
+**/audio_speech_actors_01-24/
+
+# Data directories (raw / downloaded crawl data & intermediate heavy outputs)
+src/**/data/
+**/data/*.tif
+**/data/*.tiff
+src/project_akhir/3-data_preparation/data/*.npz
+src/project_akhir/4-modelling/models/*.npz
+
+# Scratch & Temporary Working Directories
+scratch/
+tmp/
+temp/
+
+# ==============================================================================
+# Standalone / External Repositories
+# ==============================================================================
+src/Tugas_UTS/6-deployment/standalone_streamlit_app/

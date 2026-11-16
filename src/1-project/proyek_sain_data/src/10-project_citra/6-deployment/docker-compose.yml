@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  footwear-classifier:
+    build: .
+    container_name: footwear_classifier_service
+    ports:
+      - "8016:8016"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+

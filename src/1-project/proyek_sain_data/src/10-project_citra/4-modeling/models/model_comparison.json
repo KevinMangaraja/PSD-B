@@ -1,0 +1,47 @@
+[
+  {
+    "Model":"GradientBoosting",
+    "CV Accuracy Mean":0.6139048488,
+    "CV Accuracy Std":0.1644470202,
+    "CV Macro F1 Mean":0.5642601508,
+    "CV Macro F1 Std":0.147583107,
+    "CV Precision Macro":0.6749806974,
+    "CV Recall Macro":0.6459262306
+  },
+  {
+    "Model":"RandomForest",
+    "CV Accuracy Mean":0.5849825201,
+    "CV Accuracy Std":0.1980633708,
+    "CV Macro F1 Mean":0.5100964936,
+    "CV Macro F1 Std":0.20219746,
+    "CV Precision Macro":0.5734043734,
+    "CV Recall Macro":0.6159385712
+  },
+  {
+    "Model":"ExtraTrees",
+    "CV Accuracy Mean":0.5508557532,
+    "CV Accuracy Std":0.2336754939,
+    "CV Macro F1 Mean":0.4803168265,
+    "CV Macro F1 Std":0.2300134983,
+    "CV Precision Macro":0.4546248196,
+    "CV Recall Macro":0.5906636501
+  },
+  {
+    "Model":"SVC",
+    "CV Accuracy Mean":0.5150813193,
+    "CV Accuracy Std":0.1723226968,
+    "CV Macro F1 Mean":0.4771485532,
+    "CV Macro F1 Std":0.1892212083,
+    "CV Precision Macro":0.5168174603,
+    "CV Recall Macro":0.5780891657
+  },
+  {
+    "Model":"LogisticRegression",
+    "CV Accuracy Mean":0.5169235446,
+    "CV Accuracy Std":0.1636110239,
+    "CV Macro F1 Mean":0.4602840329,
+    "CV Macro F1 Std":0.1727251856,
+    "CV Precision Macro":0.5736775505,
+    "CV Recall Macro":0.5312826389
+  }
+]
