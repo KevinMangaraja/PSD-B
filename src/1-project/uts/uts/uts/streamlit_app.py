@@ -1,8 +1,11 @@
+import base64
 import json
+from io import BytesIO
 from pathlib import Path
 
 import folium
 import streamlit as st
+from PIL import Image
 from streamlit_folium import st_folium
 from folium import Element
 
@@ -39,12 +42,22 @@ def _load_metadata(metadata_path: str, modified_ns: int, size: int) -> dict:
     return json.loads(Path(metadata_path).read_text(encoding="utf-8"))
 
 
-@st.cache_data(show_spinner=False, max_entries=16)
-def _preview_image_url(path_string: str, modified_ns: int, size: int) -> str:
+@st.cache_data(show_spinner=False, max_entries=80)
+def _preview_image_url(
+    path_string: str, modified_ns: int, size: int, class_id: int
+) -> str:
     del modified_ns, size
-    import base64
-
-    encoded = base64.b64encode(Path(path_string).read_bytes()).decode("ascii")
+    with Image.open(path_string) as source:
+        image = source.convert("P")
+    transparency = bytearray([0, *([255] * 255)])
+    for other_class_id in range(1, len(CLASS_ORDER) + 1):
+        if other_class_id != class_id:
+            transparency[other_class_id] = 0
+    image.info["transparency"] = bytes(transparency)
+    image_buffer = BytesIO()
+    image.save(image_buffer, format="PNG")
+    image.close()
+    encoded = base64.b64encode(image_buffer.getvalue()).decode("ascii")
     return f"data:image/png;base64,{encoded}"
 
 
@@ -71,23 +84,29 @@ def _build_map(metadata: dict, opacity: float) -> folium.Map:
         max_zoom=19,
     ).add_to(map_view)
 
-    for tile, relative_path in metadata["streamlit_previews_by_tile"].items():
-        image_path = _project_path(relative_path)
-        if not image_path.is_file():
-            raise FileNotFoundError(f"Preview klasifikasi tidak ditemukan: {image_path}")
-        stat = image_path.stat()
-        image_url = _preview_image_url(
-            str(image_path), stat.st_mtime_ns, stat.st_size
-        )
-        folium.raster_layers.ImageOverlay(
-            image=image_url,
-            bounds=metadata["overlay_bounds"][tile],
-            name=f"RF {tile}",
-            opacity=opacity,
-            interactive=False,
-            zindex=1,
-            show=True,
-        ).add_to(map_view)
+    for class_id, label in enumerate(CLASS_ORDER, start=1):
+        layer = folium.FeatureGroup(name=label, show=True).add_to(map_view)
+        for tile, fallback_path in metadata["streamlit_previews_by_tile"].items():
+            relative_path = metadata.get(
+                "streamlit_class_previews_by_tile", {}
+            ).get(tile, {}).get(label, fallback_path)
+            image_path = _project_path(relative_path)
+            if not image_path.is_file():
+                raise FileNotFoundError(
+                    f"Preview klasifikasi tidak ditemukan: {image_path}"
+                )
+            stat = image_path.stat()
+            image_url = _preview_image_url(
+                str(image_path), stat.st_mtime_ns, stat.st_size, class_id
+            )
+            folium.raster_layers.ImageOverlay(
+                image=image_url,
+                bounds=metadata["overlay_bounds"][tile],
+                name=label,
+                opacity=opacity,
+                interactive=False,
+                zindex=class_id,
+            ).add_to(layer)
 
     legend_rows = "".join(
         f'<div><span style="display:inline-block;width:13px;height:13px;'
@@ -107,7 +126,7 @@ def _build_map(metadata: dict, opacity: float) -> folium.Map:
             """
         )
     )
-    folium.LayerControl(collapsed=True).add_to(map_view)
+    folium.LayerControl(collapsed=False, position="topright").add_to(map_view)
     map_view.fit_bounds([south_west, north_east])
     return map_view
 
@@ -153,14 +172,14 @@ def main() -> None:
         st.title("Klasifikasi LULC Jawa Timur")
         st.link_button("Buka peta Folium", "?view=folium")
 
-    opacity_percent = st.slider(
-        "Transparansi klasifikasi",
+    transparency_percent = st.slider(
+        "Transparansi klasifikasi (0% = jelas, 100% = transparan)",
         min_value=0,
         max_value=100,
-        value=100,
+        value=0,
         format="%d%%",
     )
-    map_view = _build_map(metadata, opacity_percent / 100)
+    map_view = _build_map(metadata, 1 - transparency_percent / 100)
     st_folium(map_view, height=780, use_container_width=True, returned_objects=[])
 
 

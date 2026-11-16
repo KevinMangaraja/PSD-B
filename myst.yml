@@ -28,6 +28,9 @@ project:
     - file: src/1-project/uts/uts/uts/data_preparation.md
     - file: src/1-project/uts/uts/uts/cek_visual.ipynb
     - file: src/1-project/uts/uts/uts/klasifikasiLulcJatim.ipynb
+    - file: src/1-project/proyek_sain_data/src/10-project_citra/1-business_understanding/1-business.md
+    - file: src/1-project/proyek_sain_data/src/10-project_citra/2-data_understanding/1-data_understanding.ipynb
+    - file: src/1-project/proyek_sain_data/src/10-project_citra/3-data_preparation/1-data_preparation.ipynb
   # github:
   # To autogenerate a Table of Contents, run "jupyter book init --write-toc"
 site:

@@ -63,3 +63,9 @@ Dengan memanfaatkan citra **Sentinel-2**, perbedaan ini dapat diselesaikan melal
 - **Indeks Spektral (NDVI, NDWI, NDBI):** Memperkuat marjin pemisah (_decision boundary_) antar kelas pada algoritma Machine Learning (seperti Random Forest).
 
 ---
+
+### 1.5 Pembatasan Spasial Hutan Mangrove
+
+Karena pola spektral mangrove dapat menyerupai vegetasi lain di daratan, prediksi kelas mangrove dibatasi pada zona sejauh **5 km dari garis pantai**. Garis pantai Jawa Timur bersumber dari Natural Earth 1:10m dan disimpan pada `data/geojson/garis_pantai_jawa_timur.geojson`. Prediksi mangrove di luar zona tersebut dialihkan ke kelas Hutan non mangrove. Jarak 5 km mencakup seluruh poligon sampel mangrove yang tersedia, yang berjarak kurang dari 3,2 km dari garis pantai.
+
+Pembatas ini adalah aturan spasial pascaklasifikasi, bukan pengganti validasi lapangan. Resolusi garis pantai Natural Earth dapat menggeneralisasi lekuk pesisir kecil, sehingga batas pesisir sebaiknya dipahami sebagai zona penyaring untuk mengurangi salah klasifikasi mangrove jauh di daratan.

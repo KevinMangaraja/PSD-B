@@ -1,10 +1,16 @@
 {
   "model": "data\\model_rf_lulc.joblib",
   "method": "Random Forest",
-  "boundary_file": "data\\geojson\\batas_administratif_jawa_timur.geojson",
+  "boundary_file": "data/geojson/batas_administratif_jawa_timur.geojson",
   "boundary_source": "geoBoundaries gbOpen Indonesia ADM1, sourced from OpenStreetMap/Wambacher (boundary year 2017; ODbL 1.0)",
   "boundary_source_url": "https://www.geoboundaries.org/api/current/gbOpen/IDN/ADM1/",
   "boundary_license": "Open Data Commons Open Database License (ODbL) 1.0",
+  "coastline_file": "data/geojson/garis_pantai_jawa_timur.geojson",
+  "coastline_source": "Natural Earth 1:10m coastline",
+  "coastline_source_url": "https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/",
+  "coastline_license": "Public domain",
+  "mangrove_coastal_buffer_m": 5000,
+  "mangrove_outside_coastal_zone": "Reclassified as Hutan non mangrove",
   "classes": [
     "Sawah",
     "Pemukiman",
@@ -74,40 +80,91 @@
     }
   },
   "prediction_rasters": [
-    "data\\hasil_klasifikasi\\klasifikasi_T49MEM_10m.tif",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MEN_10m.tif",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MFM_10m.tif",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MFN_10m.tif",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MGM_10m.tif",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MGN_10m.tif",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MHM_10m.tif"
+    "data/hasil_klasifikasi/klasifikasi_T49MEM_10m.tif",
+    "data/hasil_klasifikasi/klasifikasi_T49MEN_10m.tif",
+    "data/hasil_klasifikasi/klasifikasi_T49MFM_10m.tif",
+    "data/hasil_klasifikasi/klasifikasi_T49MFN_10m.tif",
+    "data/hasil_klasifikasi/klasifikasi_T49MGM_10m.tif",
+    "data/hasil_klasifikasi/klasifikasi_T49MGN_10m.tif",
+    "data/hasil_klasifikasi/klasifikasi_T49MHM_10m.tif"
   ],
   "folium_tile_overlays": [
-    "data\\hasil_klasifikasi\\klasifikasi_T49MEM_10m_folium.png",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MEN_10m_folium.png",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MFM_10m_folium.png",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MFN_10m_folium.png",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MGM_10m_folium.png",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MGN_10m_folium.png",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MHM_10m_folium.png"
+    "data/hasil_klasifikasi/klasifikasi_T49MEM_10m_folium.png",
+    "data/hasil_klasifikasi/klasifikasi_T49MEN_10m_folium.png",
+    "data/hasil_klasifikasi/klasifikasi_T49MFM_10m_folium.png",
+    "data/hasil_klasifikasi/klasifikasi_T49MFN_10m_folium.png",
+    "data/hasil_klasifikasi/klasifikasi_T49MGM_10m_folium.png",
+    "data/hasil_klasifikasi/klasifikasi_T49MGN_10m_folium.png",
+    "data/hasil_klasifikasi/klasifikasi_T49MHM_10m_folium.png"
   ],
   "streamlit_previews": [
-    "data\\hasil_klasifikasi\\klasifikasi_T49MEM_10m_streamlit.png",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MEN_10m_streamlit.png",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MFM_10m_streamlit.png",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MFN_10m_streamlit.png",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MGM_10m_streamlit.png",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MGN_10m_streamlit.png",
-    "data\\hasil_klasifikasi\\klasifikasi_T49MHM_10m_streamlit.png"
+    "data/hasil_klasifikasi/klasifikasi_T49MEM_10m_streamlit.png",
+    "data/hasil_klasifikasi/klasifikasi_T49MEN_10m_streamlit.png",
+    "data/hasil_klasifikasi/klasifikasi_T49MFM_10m_streamlit.png",
+    "data/hasil_klasifikasi/klasifikasi_T49MFN_10m_streamlit.png",
+    "data/hasil_klasifikasi/klasifikasi_T49MGM_10m_streamlit.png",
+    "data/hasil_klasifikasi/klasifikasi_T49MGN_10m_streamlit.png",
+    "data/hasil_klasifikasi/klasifikasi_T49MHM_10m_streamlit.png"
   ],
   "streamlit_previews_by_tile": {
-    "T49MEM": "data\\hasil_klasifikasi\\klasifikasi_T49MEM_10m_streamlit.png",
-    "T49MEN": "data\\hasil_klasifikasi\\klasifikasi_T49MEN_10m_streamlit.png",
-    "T49MFM": "data\\hasil_klasifikasi\\klasifikasi_T49MFM_10m_streamlit.png",
-    "T49MFN": "data\\hasil_klasifikasi\\klasifikasi_T49MFN_10m_streamlit.png",
-    "T49MGM": "data\\hasil_klasifikasi\\klasifikasi_T49MGM_10m_streamlit.png",
-    "T49MGN": "data\\hasil_klasifikasi\\klasifikasi_T49MGN_10m_streamlit.png",
-    "T49MHM": "data\\hasil_klasifikasi\\klasifikasi_T49MHM_10m_streamlit.png"
+    "T49MEM": "data/hasil_klasifikasi/klasifikasi_T49MEM_10m_streamlit.png",
+    "T49MEN": "data/hasil_klasifikasi/klasifikasi_T49MEN_10m_streamlit.png",
+    "T49MFM": "data/hasil_klasifikasi/klasifikasi_T49MFM_10m_streamlit.png",
+    "T49MFN": "data/hasil_klasifikasi/klasifikasi_T49MFN_10m_streamlit.png",
+    "T49MGM": "data/hasil_klasifikasi/klasifikasi_T49MGM_10m_streamlit.png",
+    "T49MGN": "data/hasil_klasifikasi/klasifikasi_T49MGN_10m_streamlit.png",
+    "T49MHM": "data/hasil_klasifikasi/klasifikasi_T49MHM_10m_streamlit.png"
+  },
+  "streamlit_class_previews_by_tile": {
+    "T49MEM": {
+      "Sawah": "data/hasil_klasifikasi/klasifikasi_T49MEM_10m_streamlit_1.png",
+      "Pemukiman": "data/hasil_klasifikasi/klasifikasi_T49MEM_10m_streamlit_2.png",
+      "Hutan non mangrove": "data/hasil_klasifikasi/klasifikasi_T49MEM_10m_streamlit_3.png",
+      "Hutan mangrove": "data/hasil_klasifikasi/klasifikasi_T49MEM_10m_streamlit_4.png",
+      "Air": "data/hasil_klasifikasi/klasifikasi_T49MEM_10m_streamlit_5.png"
+    },
+    "T49MEN": {
+      "Sawah": "data/hasil_klasifikasi/klasifikasi_T49MEN_10m_streamlit_1.png",
+      "Pemukiman": "data/hasil_klasifikasi/klasifikasi_T49MEN_10m_streamlit_2.png",
+      "Hutan non mangrove": "data/hasil_klasifikasi/klasifikasi_T49MEN_10m_streamlit_3.png",
+      "Hutan mangrove": "data/hasil_klasifikasi/klasifikasi_T49MEN_10m_streamlit_4.png",
+      "Air": "data/hasil_klasifikasi/klasifikasi_T49MEN_10m_streamlit_5.png"
+    },
+    "T49MFM": {
+      "Sawah": "data/hasil_klasifikasi/klasifikasi_T49MFM_10m_streamlit_1.png",
+      "Pemukiman": "data/hasil_klasifikasi/klasifikasi_T49MFM_10m_streamlit_2.png",
+      "Hutan non mangrove": "data/hasil_klasifikasi/klasifikasi_T49MFM_10m_streamlit_3.png",
+      "Hutan mangrove": "data/hasil_klasifikasi/klasifikasi_T49MFM_10m_streamlit_4.png",
+      "Air": "data/hasil_klasifikasi/klasifikasi_T49MFM_10m_streamlit_5.png"
+    },
+    "T49MFN": {
+      "Sawah": "data/hasil_klasifikasi/klasifikasi_T49MFN_10m_streamlit_1.png",
+      "Pemukiman": "data/hasil_klasifikasi/klasifikasi_T49MFN_10m_streamlit_2.png",
+      "Hutan non mangrove": "data/hasil_klasifikasi/klasifikasi_T49MFN_10m_streamlit_3.png",
+      "Hutan mangrove": "data/hasil_klasifikasi/klasifikasi_T49MFN_10m_streamlit_4.png",
+      "Air": "data/hasil_klasifikasi/klasifikasi_T49MFN_10m_streamlit_5.png"
+    },
+    "T49MGM": {
+      "Sawah": "data/hasil_klasifikasi/klasifikasi_T49MGM_10m_streamlit_1.png",
+      "Pemukiman": "data/hasil_klasifikasi/klasifikasi_T49MGM_10m_streamlit_2.png",
+      "Hutan non mangrove": "data/hasil_klasifikasi/klasifikasi_T49MGM_10m_streamlit_3.png",
+      "Hutan mangrove": "data/hasil_klasifikasi/klasifikasi_T49MGM_10m_streamlit_4.png",
+      "Air": "data/hasil_klasifikasi/klasifikasi_T49MGM_10m_streamlit_5.png"
+    },
+    "T49MGN": {
+      "Sawah": "data/hasil_klasifikasi/klasifikasi_T49MGN_10m_streamlit_1.png",
+      "Pemukiman": "data/hasil_klasifikasi/klasifikasi_T49MGN_10m_streamlit_2.png",
+      "Hutan non mangrove": "data/hasil_klasifikasi/klasifikasi_T49MGN_10m_streamlit_3.png",
+      "Hutan mangrove": "data/hasil_klasifikasi/klasifikasi_T49MGN_10m_streamlit_4.png",
+      "Air": "data/hasil_klasifikasi/klasifikasi_T49MGN_10m_streamlit_5.png"
+    },
+    "T49MHM": {
+      "Sawah": "data/hasil_klasifikasi/klasifikasi_T49MHM_10m_streamlit_1.png",
+      "Pemukiman": "data/hasil_klasifikasi/klasifikasi_T49MHM_10m_streamlit_2.png",
+      "Hutan non mangrove": "data/hasil_klasifikasi/klasifikasi_T49MHM_10m_streamlit_3.png",
+      "Hutan mangrove": "data/hasil_klasifikasi/klasifikasi_T49MHM_10m_streamlit_4.png",
+      "Air": "data/hasil_klasifikasi/klasifikasi_T49MHM_10m_streamlit_5.png"
+    }
   },
   "overlay_bounds": {
     "T49MEM": [
@@ -193,12 +250,12 @@
   ],
   "map_serving_note": "Serve the output folder over HTTP so the Folium map can load the adjacent full-resolution PNG overlays.",
   "prediction_valid_pixels": 415484994,
-  "raster_coverage_percent_of_boundary": 81.50533281701053,
+  "raster_coverage_percent_of_boundary": 81.50533281701051,
   "predicted_pixel_count_by_class": {
     "Sawah": 22781578,
     "Pemukiman": 120124594,
-    "Hutan non mangrove": 150852972,
-    "Hutan mangrove": 9736242,
+    "Hutan non mangrove": 158661611,
+    "Hutan mangrove": 1927603,
     "Air": 111989608
   },
   "test_accuracy": 0.7922388059701493,

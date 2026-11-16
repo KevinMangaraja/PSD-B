@@ -51,6 +51,13 @@ BOUNDARY_SOURCE = (
 )
 BOUNDARY_SOURCE_URL = "https://www.geoboundaries.org/api/current/gbOpen/IDN/ADM1/"
 BOUNDARY_MASK_VERSION = "2"
+COASTLINE_SOURCE = "Natural Earth 1:10m coastline"
+COASTLINE_SOURCE_URL = (
+    "https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-coastline/"
+)
+COASTLINE_LICENSE = "Public domain"
+MANGROVE_COASTAL_BUFFER_METERS = 5_000
+MANGROVE_COAST_MASK_VERSION = "1"
 
 
 def _latest_complete_scenes(raster_root: Path) -> dict[str, dict[str, Path]]:
@@ -99,6 +106,77 @@ def _feature_matrix(arrays: np.ndarray, valid: np.ndarray) -> pd.DataFrame:
         },
         columns=FEATURES,
     )
+
+
+def _class_palette() -> list[int]:
+    palette = [0] * 768
+    for class_id, label in enumerate(CLASS_ORDER, start=1):
+        color = CLASS_COLORS[label].lstrip("#")
+        palette[class_id * 3 : class_id * 3 + 3] = [
+            int(color[offset : offset + 2], 16) for offset in (0, 2, 4)
+        ]
+    return palette
+
+
+def _apply_mangrove_coastal_constraint(
+    raster_path: Path, coastline, coastline_crs
+) -> int:
+    changed_pixels = 0
+    mangrove_id = CLASS_IDS["Hutan mangrove"]
+    replacement_id = CLASS_IDS["Hutan non mangrove"]
+    with rasterio.open(raster_path, "r+") as prediction:
+        if prediction.crs is None or not prediction.crs.is_projected:
+            raise ValueError(
+                f"CRS raster harus terproyeksi untuk membatasi mangrove: "
+                f"{raster_path}"
+            )
+        coastal_zone = gpd.GeoSeries(
+            [coastline], crs=coastline_crs
+        ).to_crs(prediction.crs).iloc[0].buffer(MANGROVE_COASTAL_BUFFER_METERS)
+        if coastal_zone.is_empty:
+            raise ValueError("Zona pesisir mangrove kosong setelah transformasi CRS.")
+
+        for _, window in prediction.block_windows(1):
+            values = prediction.read(1, window=window)
+            mangrove_pixels = values == mangrove_id
+            if not mangrove_pixels.any():
+                continue
+            bounds = box(*rasterio.windows.bounds(window, prediction.transform))
+            block_zone = coastal_zone.intersection(bounds)
+            if block_zone.is_empty:
+                outside_coast = mangrove_pixels
+            else:
+                coastal_pixels = rasterize(
+                    [(mapping(block_zone), 1)],
+                    out_shape=values.shape,
+                    transform=prediction.window_transform(window),
+                    fill=0,
+                    dtype="uint8",
+                ).astype(bool)
+                outside_coast = mangrove_pixels & ~coastal_pixels
+            changed_count = int(outside_coast.sum())
+            if changed_count:
+                values[outside_coast] = replacement_id
+                prediction.write(values, 1, window=window)
+                changed_pixels += changed_count
+    return changed_pixels
+
+
+def _write_class_previews(
+    class_ids: np.ndarray, output_dir: Path, stem: str
+) -> dict[str, Path]:
+    paths = {}
+    palette = _class_palette()
+    for class_id, label in enumerate(CLASS_ORDER, start=1):
+        preview_ids = np.where(class_ids == class_id, class_id, 0).astype(np.uint8)
+        preview = Image.fromarray(preview_ids, mode="P")
+        preview.putpalette(palette)
+        preview.info["transparency"] = bytes([0, *([255] * 255)])
+        path = output_dir / f"{stem}_streamlit_{class_id}.png"
+        preview.save(path, format="PNG", optimize=True)
+        preview.close()
+        paths[label] = path
+    return paths
 
 
 def _classify_scene(
@@ -278,7 +356,7 @@ def _clip_existing_prediction(
 
 def _write_folium_overlay(
     raster_path: Path, image_path: Path, preview_path: Path
-) -> tuple[list[list[float]], int]:
+) -> tuple[list[list[float]], int, dict[str, Path]]:
     with rasterio.open(raster_path) as source:
         class_ids = source.read(1)
         scale = min(1, 2048 / source.width, 2048 / source.height)
@@ -293,12 +371,7 @@ def _write_folium_overlay(
         bounds = transform_bounds(
             source.crs, "EPSG:4326", *source.bounds, densify_pts=21
         )
-    palette = [0] * 768
-    for class_id, label in enumerate(CLASS_ORDER, start=1):
-        color = CLASS_COLORS[label].lstrip("#")
-        palette[class_id * 3 : class_id * 3 + 3] = [
-            int(color[offset : offset + 2], 16) for offset in (0, 2, 4)
-        ]
+    palette = _class_palette()
     image = Image.fromarray(class_ids, mode="P")
     image.putpalette(palette)
     image.info["transparency"] = bytes([0, *([255] * 255)])
@@ -307,12 +380,15 @@ def _write_folium_overlay(
     preview.putpalette(palette)
     preview.info["transparency"] = bytes([0, *([255] * 255)])
     preview.save(preview_path, format="PNG", optimize=True)
+    class_preview_paths = _write_class_previews(
+        preview_ids, preview_path.parent, raster_path.stem
+    )
     class_count = int(np.count_nonzero(class_ids))
     image.close()
     preview.close()
     del class_ids
     west, south, east, north = bounds
-    return [[south, west], [north, east]], class_count
+    return [[south, west], [north, east]], class_count, class_preview_paths
 
 
 def refresh_streamlit_previews(project_dir: Path) -> None:
@@ -322,12 +398,8 @@ def refresh_streamlit_previews(project_dir: Path) -> None:
     metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     preview_paths = {}
     preview_bounds = {}
-    palette = [0] * 768
-    for class_id, label in enumerate(CLASS_ORDER, start=1):
-        color = CLASS_COLORS[label].lstrip("#")
-        palette[class_id * 3 : class_id * 3 + 3] = [
-            int(color[offset : offset + 2], 16) for offset in (0, 2, 4)
-        ]
+    palette = _class_palette()
+    class_preview_paths_by_tile = {}
 
     for relative_path in metadata["prediction_rasters"]:
         raster_path = project_dir / relative_path
@@ -351,6 +423,9 @@ def refresh_streamlit_previews(project_dir: Path) -> None:
         preview.info["transparency"] = bytes([0, *([255] * 255)])
         preview.save(preview_path, format="PNG", optimize=True)
         preview.close()
+        class_preview_paths_by_tile[tile] = _write_class_previews(
+            preview_ids, output_dir, raster_path.stem
+        )
         west, south, east, north = bounds
         preview_paths[tile] = preview_path.relative_to(project_dir).as_posix()
         preview_bounds[tile] = [[south, west], [north, east]]
@@ -361,6 +436,13 @@ def refresh_streamlit_previews(project_dir: Path) -> None:
     west, south, east, north = boundary.total_bounds
     metadata["streamlit_previews"] = list(preview_paths.values())
     metadata["streamlit_previews_by_tile"] = preview_paths
+    metadata["streamlit_class_previews_by_tile"] = {
+        tile: {
+            label: path.relative_to(project_dir).as_posix()
+            for label, path in paths.items()
+        }
+        for tile, paths in class_preview_paths_by_tile.items()
+    }
     metadata["overlay_bounds"] = preview_bounds
     metadata["map_bounds"] = [[float(south), float(west)], [float(north), float(east)]]
     metadata_path.write_text(
@@ -411,8 +493,37 @@ def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
     model_fingerprint = _model_fingerprint(model_path)
     boundary_fingerprint = _model_fingerprint(boundary_path)
 
-    selected_scenes = _latest_complete_scenes(raster_root)
-    print("Scene Sentinel-2 yang dipakai (scene terbaru per tile):")
+    coastline_path = raster_root / "garis_pantai_jawa_timur.geojson"
+    if not coastline_path.is_file():
+        raise FileNotFoundError(f"Data garis pantai tidak ditemukan: {coastline_path}")
+    coastline = gpd.read_file(coastline_path)
+    if coastline.empty or coastline.crs is None:
+        raise ValueError("GeoJSON garis pantai kosong atau tidak memiliki CRS.")
+    coastline_geometry = coastline.geometry.union_all()
+    if coastline_geometry.is_empty:
+        raise ValueError("Geometri garis pantai kosong.")
+    coastline_fingerprint = _model_fingerprint(coastline_path)
+
+    previous_metadata_path = output_dir / "ringkasan_klasifikasi.json"
+    previous_metadata = (
+        json.loads(previous_metadata_path.read_text(encoding="utf-8"))
+        if previous_metadata_path.is_file()
+        else {}
+    )
+    existing_rasters = sorted(output_dir.glob("klasifikasi_*_10m.tif"))
+    available_scenes = list(iter_sentinel_tile_rasters(raster_root))
+    if available_scenes:
+        selected_scenes = _latest_complete_scenes(raster_root)
+        print("Scene Sentinel-2 yang dipakai (scene terbaru per tile):")
+    elif existing_rasters:
+        selected_scenes = {}
+        print(
+            "Citra Sentinel-2 sumber tidak tersedia; memperbarui GeoTIFF "
+            "klasifikasi yang ada."
+        )
+    else:
+        selected_scenes = _latest_complete_scenes(raster_root)
+
     raster_paths = []
     total_pixels = 0
     projected_boundary = boundary.to_crs("EPSG:32749")
@@ -425,11 +536,13 @@ def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
     }
     for tile, files in selected_scenes.items():
         output_path = output_dir / f"klasifikasi_{tile}_10m.tif"
-        reusable = False
+        same_model_and_scenes = False
+        same_boundary = False
+        same_coastline = False
         if output_path.is_file():
             with rasterio.open(output_path) as existing:
                 tags = existing.tags()
-                reusable = (
+                same_model_and_scenes = (
                     tags.get("model") == "Random Forest"
                     and tags.get("model_sha256") == model_fingerprint
                     and tags.get("source_scenes") == source_scene_tags[tile]
@@ -438,41 +551,115 @@ def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
                 same_boundary &= (
                     tags.get("boundary_mask_version") == BOUNDARY_MASK_VERSION
                 )
-                if reusable and same_boundary:
+                same_coastline = (
+                    tags.get("coastline_sha256") == coastline_fingerprint
+                    and tags.get("mangrove_coastal_buffer_m")
+                    == str(MANGROVE_COASTAL_BUFFER_METERS)
+                    and tags.get("mangrove_coast_mask_version")
+                    == MANGROVE_COAST_MASK_VERSION
+                )
+                if same_model_and_scenes and same_boundary:
                     count = int(
                         np.count_nonzero(existing.read(1, masked=True).compressed())
                     )
-        if reusable and same_boundary:
+        if same_model_and_scenes and same_boundary and same_coastline:
             print(f"{tile}: memakai ulang GeoTIFF klasifikasi yang sudah ada.")
-        elif reusable:
-            print(
-                f"{tile}: memotong prediksi lama ke batas administratif rinci."
-            )
-            count = _clip_existing_prediction(
-                output_path,
-                boundary.geometry.iloc[0],
-                boundary.crs,
-            )
+        elif same_model_and_scenes:
+            if not same_boundary:
+                print(f"{tile}: memperbarui batas administratif klasifikasi.")
+                count = _clip_existing_prediction(
+                    output_path,
+                    boundary.geometry.iloc[0],
+                    boundary.crs,
+                )
+            if not same_coastline:
+                changed = _apply_mangrove_coastal_constraint(
+                    output_path, coastline_geometry, coastline.crs
+                )
+                print(
+                    f"{tile}: {changed:,} piksel mangrove di luar zona pesisir "
+                    "dikoreksi."
+                )
         else:
             count, _ = _classify_scene(tile, files, boundary, model, output_path)
+            changed = _apply_mangrove_coastal_constraint(
+                output_path, coastline_geometry, coastline.crs
+            )
+            print(
+                f"{tile}: {changed:,} piksel mangrove di luar zona pesisir "
+                "dikoreksi."
+            )
         with rasterio.open(output_path, "r+") as classified:
             classified.update_tags(
                 model_sha256=model_fingerprint,
                 source_scenes=source_scene_tags[tile],
                 boundary_sha256=boundary_fingerprint,
                 boundary_mask_version=BOUNDARY_MASK_VERSION,
+                coastline_sha256=coastline_fingerprint,
+                coastline_source=COASTLINE_SOURCE,
+                mangrove_coastal_buffer_m=str(MANGROVE_COASTAL_BUFFER_METERS),
+                mangrove_coast_mask_version=MANGROVE_COAST_MASK_VERSION,
             )
         total_pixels += count
         raster_paths.append(output_path)
         print(f"  {tile}: {next(iter(files.values())).name}")
 
+    if not selected_scenes:
+        for output_path in existing_rasters:
+            tile = output_path.stem.removeprefix("klasifikasi_").removesuffix("_10m")
+            same_boundary = False
+            same_coastline = False
+            with rasterio.open(output_path) as existing:
+                tags = existing.tags()
+                same_boundary = (
+                    tags.get("boundary_sha256") == boundary_fingerprint
+                    and tags.get("boundary_mask_version") == BOUNDARY_MASK_VERSION
+                )
+                same_coastline = (
+                    tags.get("coastline_sha256") == coastline_fingerprint
+                    and tags.get("mangrove_coastal_buffer_m")
+                    == str(MANGROVE_COASTAL_BUFFER_METERS)
+                    and tags.get("mangrove_coast_mask_version")
+                    == MANGROVE_COAST_MASK_VERSION
+                )
+                count = int(
+                    np.count_nonzero(existing.read(1, masked=True).compressed())
+                )
+            if not same_boundary:
+                count = _clip_existing_prediction(
+                    output_path,
+                    boundary.geometry.iloc[0],
+                    boundary.crs,
+                )
+            if not same_coastline:
+                changed = _apply_mangrove_coastal_constraint(
+                    output_path, coastline_geometry, coastline.crs
+                )
+                print(f"{tile}: {changed:,} piksel mangrove di luar zona pesisir dikoreksi.")
+            with rasterio.open(output_path, "r+") as classified:
+                classified.update_tags(
+                    model_sha256=model_fingerprint,
+                    boundary_sha256=boundary_fingerprint,
+                    boundary_mask_version=BOUNDARY_MASK_VERSION,
+                    coastline_sha256=coastline_fingerprint,
+                    coastline_source=COASTLINE_SOURCE,
+                    mangrove_coastal_buffer_m=str(MANGROVE_COASTAL_BUFFER_METERS),
+                    mangrove_coast_mask_version=MANGROVE_COAST_MASK_VERSION,
+                )
+            total_pixels += count
+            raster_paths.append(output_path)
+
     if total_pixels == 0:
         raise ValueError("Tidak ada piksel Sentinel-2 valid di dalam batas Jawa Timur.")
 
+    raster_tiles = [
+        path.stem.removeprefix("klasifikasi_").removesuffix("_10m")
+        for path in raster_paths
+    ]
     overlay_paths = []
     preview_paths = []
+    class_preview_paths_by_tile = {}
     overlay_bounds = {}
-    overlay_tiles = {}
     predicted_counts = {label: 0 for label in CLASS_ORDER}
     for path in raster_paths:
         with rasterio.open(path) as source:
@@ -482,11 +669,14 @@ def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
                     predicted_counts[CLASS_ORDER[int(value) - 1]] += int(count)
         overlay_path = output_dir / f"{path.stem}_folium.png"
         preview_path = output_dir / f"{path.stem}_streamlit.png"
-        image_bounds, _ = _write_folium_overlay(path, overlay_path, preview_path)
+        image_bounds, _, class_preview_paths = _write_folium_overlay(
+            path, overlay_path, preview_path
+        )
         overlay_paths.append(overlay_path)
         preview_paths.append(preview_path)
+        tile = path.stem.removeprefix("klasifikasi_").removesuffix("_10m")
+        class_preview_paths_by_tile[tile] = class_preview_paths
         overlay_bounds[path.stem] = image_bounds
-        overlay_tiles[overlay_path.stem] = path.stem
 
     projected_boundary_geometry = projected_boundary.geometry.union_all()
     raster_footprints = []
@@ -502,7 +692,11 @@ def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
         if raster_footprints
         else 0.0
     )
-    coverage_percent = covered_area * 100.0 / projected_boundary_geometry.area
+    coverage_percent = (
+        covered_area * 100.0 / projected_boundary_geometry.area
+        if selected_scenes
+        else previous_metadata.get("raster_coverage_percent_of_boundary", 0.0)
+    )
     test_pixels = pd.read_csv(
         data_dir / "csv" / "split_dataset" / "test_pixels.csv"
     )
@@ -541,17 +735,18 @@ def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
         [float(boundary_wgs84.total_bounds[1]), float(boundary_wgs84.total_bounds[0])],
         [float(boundary_wgs84.total_bounds[3]), float(boundary_wgs84.total_bounds[2])],
     ]
-    for tile, image_path in zip(selected_scenes, overlay_paths):
-        folium.raster_layers.ImageOverlay(
-            image=f"https://lulc-assets.invalid/{image_path.name}",
-            bounds=overlay_bounds[overlay_tiles[image_path.stem]],
-            name=f"RF {tile}",
-            opacity=1.0,
-            interactive=True,
-            cross_origin=False,
-            zindex=1,
-            show=True,
-        ).add_to(m)
+    for class_id, label in enumerate(CLASS_ORDER, start=1):
+        layer = folium.FeatureGroup(name=label, show=True).add_to(m)
+        for tile, paths in class_preview_paths_by_tile.items():
+            folium.raster_layers.ImageOverlay(
+                image=f"https://lulc-assets.invalid/{paths[label].name}",
+                bounds=overlay_bounds[f"klasifikasi_{tile}_10m"],
+                name=label,
+                opacity=1.0,
+                interactive=False,
+                cross_origin=False,
+                zindex=class_id,
+            ).add_to(layer)
 
     legend_rows = "".join(
         f'<div><span style="display:inline-block;width:13px;height:13px;'
@@ -570,14 +765,15 @@ def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
         """
     )
     m.get_root().html.add_child(legend)
-    folium.LayerControl(collapsed=False).add_to(m)
+    folium.LayerControl(collapsed=False, position="topright").add_to(m)
     m.fit_bounds(bounds)
 
     map_path = output_dir / "peta_klasifikasi_lulc_jawa_timur.html"
     m.save(map_path)
     map_html = map_path.read_text(encoding="utf-8")
+    map_html = "\n".join(line.rstrip() for line in map_html.splitlines()) + "\n"
     asset_prefix = "https://lulc-assets.invalid/"
-    if map_html.count(asset_prefix) != len(overlay_paths):
+    if map_html.count(asset_prefix) != len(overlay_paths) * len(CLASS_ORDER):
         raise RuntimeError("URL overlay Folium tidak sesuai dengan jumlah tile.")
     map_path.write_text(
         map_html.replace(asset_prefix, "./"),
@@ -593,12 +789,20 @@ def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
                 "boundary_source": BOUNDARY_SOURCE,
                 "boundary_source_url": BOUNDARY_SOURCE_URL,
                 "boundary_license": "Open Data Commons Open Database License (ODbL) 1.0",
+                "coastline_file": coastline_path.relative_to(project_dir).as_posix(),
+                "coastline_source": COASTLINE_SOURCE,
+                "coastline_source_url": COASTLINE_SOURCE_URL,
+                "coastline_license": COASTLINE_LICENSE,
+                "mangrove_coastal_buffer_m": MANGROVE_COASTAL_BUFFER_METERS,
+                "mangrove_outside_coastal_zone": "Reclassified as Hutan non mangrove",
                 "classes": list(CLASS_ORDER),
                 "features": list(FEATURES),
                 "scene_files": {
                     tile: {band: path.name for band, path in files.items()}
                     for tile, files in selected_scenes.items()
-                },
+                }
+                if selected_scenes
+                else previous_metadata.get("scene_files", {}),
                 "prediction_rasters": [
                     path.relative_to(project_dir).as_posix() for path in raster_paths
                 ],
@@ -610,11 +814,18 @@ def generate_lulc_map(project_dir: Path) -> dict[str, Path]:
                 ],
                 "streamlit_previews_by_tile": {
                     tile: path.relative_to(project_dir).as_posix()
-                    for tile, path in zip(selected_scenes, preview_paths)
+                    for tile, path in zip(raster_tiles, preview_paths)
+                },
+                "streamlit_class_previews_by_tile": {
+                    tile: {
+                        label: path.relative_to(project_dir).as_posix()
+                        for label, path in paths.items()
+                    }
+                    for tile, paths in class_preview_paths_by_tile.items()
                 },
                 "overlay_bounds": {
                     tile: overlay_bounds[f"klasifikasi_{tile}_10m"]
-                    for tile in selected_scenes
+                    for tile in raster_tiles
                 },
                 "map_bounds": [
                     [
